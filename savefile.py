@@ -120,7 +120,7 @@ class SaveDataProgression:
 class SaveData:
 
     def __init__(self, data):
-        self.data = data
+        self.rawData = data
 
         self.expenses = SaveDataExpenses(data["Expenses"])
         self.price = SaveDataPrice(data["Price"])

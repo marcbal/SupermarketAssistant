@@ -35,8 +35,10 @@ class BoxSize(Enum):
     _15x15x15 = 5
     _40x26x26 = 6 # for furniture
 
+
 class DisplayType(Enum):
     """Enum extracted from source code DisplayType.cs."""
+
     FREEZER = 0
     FRIDGE = 1
     CRATE = 2
@@ -47,6 +49,7 @@ class DisplayType(Enum):
 
 class ProductSO:
     """Static data of a product from the game sources."""
+
     def __init__(self, soData):
         self.assetId = int(soData["_ES3Ref"])
         self.id = int(soData["ID"])
@@ -67,6 +70,7 @@ class ProductSO:
 
 
 class ProductsCollection:
+
     def __init__(self, data):
         data = data["value"]
         self.byId: dict[int, ProductSO] = {}
@@ -82,10 +86,6 @@ class ProductsCollection:
 
 class ProductLicenseSO:
     """Static data of a product license from the game sources."""
-
-    licensesById: dict[int, "ProductLicenseSO"] = {}
-    licensesByAssetId: dict[int, "ProductLicenseSO"] = {}
-
 
     def __init__(self, soData, products: ProductsCollection):
         self.assetId = int(soData["_ES3Ref"])
@@ -122,6 +122,7 @@ class ProductLicensesCollection:
 
 class BoxSO:
     """Static data of a box size from the game sources."""
+
     def __init__(self, soData):
         self.assetId = int(soData["_ES3Ref"])
         self.id = int(soData["ID"])
@@ -159,7 +160,7 @@ class PriceCurves:
 class GameData:
 
     def __init__(self, data):
-        self.data = data
+        self.rawData = data
 
         self.products = ProductsCollection(data["products"])
         self.licenses = ProductLicensesCollection(data["licenses"], self.products)
