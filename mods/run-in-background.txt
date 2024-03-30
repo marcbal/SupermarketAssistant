@@ -1,0 +1,6 @@
+  class PlayerController {
+      private void OnEnable() {
++         Application.runInBackground = true;
+          ...
+      }
+  }

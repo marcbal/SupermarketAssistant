@@ -1,0 +1,24 @@
+  class SaveManager {
+-     private ES3Settings m_ES3Settings;
++     public ES3Settings m_ES3Settings;
+  }
+
+
+  class IDManager {
++     private void OnEnable() {
++		Debug.Log("IDManager OnEnable");
++		ES3.Save<List<ProductSO>>("products", this.m_Products, "game-data.dat", Singleton<SaveManager>.Instance.m_ES3Settings);
++		ES3.Save<List<ProductLicenseSO>>("licenses", this.m_ProductLicenses, "game-data.dat", Singleton<SaveManager>.Instance.m_ES3Settings);
++		ES3.Save<List<BoxSO>>("boxes", this.m_Boxes, "game-data.dat", Singleton<SaveManager>.Instance.m_ES3Settings);
++		ES3.Save<PriceEvaluationManager>("price-curves", Singleton<PriceEvaluationManager>.Instance, "game-data.dat", Singleton<SaveManager>.Instance.m_ES3Settings);
++		ES3.StoreCachedFile("game-data.dat");
++     }
+  }
+
+  class LocalizationManager {
++     private void OnEnable() {
++		Debug.Log("LocalizationManager OnEnable");
++		ES3.Save<Dictionary<int, string>>("products-localization", this.m_LocalizedProductNames, "game-data.dat", Singleton<SaveManager>.Instance.m_ES3Settings);
++		ES3.StoreCachedFile("game-data.dat");
++     }
+  }
