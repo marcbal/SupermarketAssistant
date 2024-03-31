@@ -41,6 +41,7 @@ class Product:
 
     def __init__(self, pSO: ProductSO):
         self.productSO = pSO
+        self.localizedName = gameData.productLocalization[pSO.id]
 
         self.licenseUnlockIndex: int = None
 
@@ -268,7 +269,7 @@ if len(productList) > 0:
         ColumnDefinition("Id"           , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Lic."         , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Brand"        , lambda b: b.productSO.brand),
-        ColumnDefinition("Name"         , lambda b: b.productSO.productName),
+        ColumnDefinition("Name"         , lambda b: b.localizedName),
         #ColumnDefinition("Base price"   , lambda b: as_price(b.productSO.basePrice), alignment=TextAlignment.RIGHT),
         #ColumnDefinition("Price range"  , lambda b: f"{as_price(b.productSO.minDynamicPrice)} - {as_price(b.productSO.maxDynamicPrice)}", alignment=TextAlignment.RIGHT),
         ColumnDefinition("Opt/Max rate" , lambda b: f"{round(b.productSO.optimumProfitRate)}%-{str(round(b.productSO.maxProfitRate)).rjust(3)}%", alignment=TextAlignment.RIGHT),
@@ -313,7 +314,7 @@ if len(productList) > 0:
         ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Brand"   , lambda b: b.productSO.brand),
-        ColumnDefinition("Name"    , lambda b: b.productSO.productName),
+        ColumnDefinition("Name"    , lambda b: b.localizedName),
         ColumnDefinition("Max/slot", lambda b: b.productSO.productAmountOnDisplay),
         ColumnDefinition("Display #it #/slot", lambda b: f"{str(b.get_nb_displayed_items()).rjust(2)} [{','.join([str(v) for v in b.get_nb_displayed_items_per_slot()])}]"),
         ColumnDefinition("Storage #it #boxes #/boxes", lambda b: f"{str(b.get_nb_stored_items()).rjust(3)} {str(b.get_nb_stored_boxes()).rjust(2)} {','.join(['[' + ','.join([str(vv) for vv in v]) + ']' for v in b.get_nb_items_in_stored_boxes()])}"),
@@ -340,7 +341,7 @@ if len(productList) > 0:
         ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Brand"   , lambda b: b.productSO.brand),
-        ColumnDefinition("Name"    , lambda b: b.productSO.productName),
+        ColumnDefinition("Name"    , lambda b: b.localizedName),
         ColumnDefinition("Storage #it #boxes #/boxes", lambda b: f"{str(b.get_nb_stored_items()).rjust(3)} {str(b.get_nb_stored_boxes()).rjust(2)} {','.join(['[' + ','.join([str(vv) for vv in v]) + ']' for v in b.get_nb_items_in_stored_boxes()])}"),
         ColumnDefinition("Unstored", lambda b: f"{str(b.get_nb_unstored_box_items()).rjust(3)} {str(b.get_nb_unstored_boxes()).rjust(2)} [{','.join([str(v) for v in b.get_nb_items_in_unstored_boxes()])}]"),
     ])
@@ -364,7 +365,7 @@ if len(productList) > 0:
         ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Brand"   , lambda b: b.productSO.brand),
-        ColumnDefinition("Name"    , lambda b: b.productSO.productName),
+        ColumnDefinition("Name"    , lambda b: b.localizedName),
         ColumnDefinition("Storage #it #boxes #/boxes", lambda b: f"{str(b.get_nb_stored_items()).rjust(3)} {str(b.get_nb_stored_boxes()).rjust(2)} {','.join(['[' + ','.join([str(vv) for vv in v]) + ']' for v in b.get_nb_items_in_stored_boxes()])}"),
         ColumnDefinition("Unstored", lambda b: f"{str(b.get_nb_unstored_box_items()).rjust(3)} {str(b.get_nb_unstored_boxes()).rjust(2)} [{','.join([str(v) for v in b.get_nb_items_in_unstored_boxes()])}]"),
     ])
@@ -390,7 +391,7 @@ if (len(productList) > 0):
         ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Brand"   , lambda b: b.productSO.brand),
-        ColumnDefinition("Name"    , lambda b: b.productSO.productName),
+        ColumnDefinition("Name"    , lambda b: b.localizedName),
         ColumnDefinition("To buy"  , lambda b: b.get_nb_box_to_buy(),
                                      lambda _: fg.boldgreen, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Total"   , lambda b: as_price(b.get_nb_box_to_buy() * b.currentPrice * b.productSO.productAmountOnPurchase),
@@ -442,7 +443,7 @@ if (len(productList) > 0):
         ColumnDefinition("Id"                      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Lic."                    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Brand"                   , lambda b: b.productSO.brand),
-        ColumnDefinition("Name"                    , lambda b: b.productSO.productName),
+        ColumnDefinition("Name"                    , lambda b: b.localizedName),
         ColumnDefinition("Price (min-max)"    , lambda b: f"{as_price(b.productSO.minDynamicPrice).rjust(7)}-{as_price(b.productSO.maxDynamicPrice).rjust(7)}", alignment=TextAlignment.RIGHT),
         ColumnDefinition("#/box"                   , lambda b: b.productSO.productAmountOnPurchase, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Box price (min-max)", lambda b: f"{as_price(b.productSO.minDynamicPrice * b.productSO.productAmountOnPurchase).rjust(7)}-{as_price(b.productSO.maxDynamicPrice * b.productSO.productAmountOnPurchase).rjust(7)}", alignment=TextAlignment.RIGHT),

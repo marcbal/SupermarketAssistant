@@ -23,7 +23,7 @@ import re, yaml
 def load_es3_json_file(path):
     """Loads a JSON encoded ES3 ('Easy save 3') file.
     May badly interpret strings containing tabs or the '([0-9]+):' pattern."""
-    with open(path) as fp:
+    with open(path, encoding="utf-8") as fp:
         raw = fp.read()
     # The file is in JSON format, but not exactly: ES3 ('Easy save 3'
     # from Unity Asset Store) does not wrap int keys of objects into
