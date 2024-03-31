@@ -119,8 +119,11 @@ class SaveDataProgression:
 
 class SaveData:
 
-    def __init__(self, data):
+    saveDir: Path = Path.home().joinpath("AppData", "LocalLow", "Nokta Games", "Supermarket Simulator")
+
+    def __init__(self, data, mtime: float):
         self.rawData = data
+        self.modificationTime: float = mtime
 
         self.expenses = SaveDataExpenses(data["Expenses"])
         self.price = SaveDataPrice(data["Price"])
@@ -128,15 +131,16 @@ class SaveData:
 
 
     @staticmethod
-    def from_file(path):
-        return SaveData(load_es3_json_file(path))
-
-    @staticmethod
-    def from_workdir():
-        return SaveData.from_file("SaveFile.es3")
+    def from_file(path: Path):
+        return SaveData(load_es3_json_file(path), path.stat().st_mtime)
     
     @staticmethod
     def from_live_game_savedir():
-        return SaveData.from_file(Path.home().joinpath("AppData", "LocalLow", "Nokta Games", "Supermarket Simulator", "SaveFile.es3"))
+        saves = [f for f in SaveData.saveDir.glob("*.es3")]
+        saves = sorted(saves, key=lambda f: -f.stat().st_mtime)
+        if len(saves) == 0:
+            print("No savefile found in game save folder")
+            return None
+        return SaveData.from_file(saves[0])
 
 

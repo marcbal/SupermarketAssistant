@@ -20,6 +20,7 @@
 
 from ansi.colour import fg, fx
 import math
+from datetime import datetime
 
 from consoletable import ConsoleTable, ColumnDefinition, TextAlignment
 from animationcurves import inverse_lerp, lerp, local_max
@@ -230,7 +231,8 @@ for box in saveData.progression.boxDatas:
 print(f"{fg.brightgreen}General game data:{fx.reset}")
 
 ConsoleTable.print_objects([None], [
-    ColumnDefinition("Today"   , lambda _: saveData.progression.currentDay, alignment=TextAlignment.RIGHT),
+    ColumnDefinition("Save time", lambda _: datetime.fromtimestamp(int(saveData.modificationTime)), alignment=TextAlignment.RIGHT),
+    ColumnDefinition("Game day", lambda _: saveData.progression.currentDay, alignment=TextAlignment.RIGHT),
     ColumnDefinition("Money"   , lambda _: as_price(saveData.progression.money), alignment=TextAlignment.RIGHT),
     ColumnDefinition("Level"   , lambda _: saveData.progression.currentStoreLevel, alignment=TextAlignment.RIGHT),
 ])
