@@ -268,8 +268,8 @@ if len(productList) > 0:
     print(f"{fg.brightred}Products to update prices:{fx.reset}")
 
     ConsoleTable.print_objects(productList, [
-        ColumnDefinition("Id"           , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
-        ColumnDefinition("Lic."         , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        #ColumnDefinition("Id"           , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        #ColumnDefinition("Lic."         , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Brand"        , lambda b: b.productSO.brand),
         ColumnDefinition("Name"         , lambda b: b.localizedName),
         #ColumnDefinition("Base price"   , lambda b: as_price(b.productSO.basePrice), alignment=TextAlignment.RIGHT),
@@ -313,8 +313,8 @@ if len(productList) > 0:
     print(f"{fg.brightred}Displays to fill in the store:{fx.reset}")
 
     ConsoleTable.print_objects(productList, [
-        ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
-        ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        #ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        #ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Brand"   , lambda b: b.productSO.brand),
         ColumnDefinition("Name"    , lambda b: b.localizedName),
         ColumnDefinition("Max/slot", lambda b: b.productSO.productAmountOnDisplay),
@@ -340,8 +340,8 @@ if len(productList) > 0:
     print(f"{fg.brightred}Boxes to put in storage shelves:{fx.reset}")
 
     ConsoleTable.print_objects(productList, [
-        ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
-        ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        #ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        #ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Brand"   , lambda b: b.productSO.brand),
         ColumnDefinition("Name"    , lambda b: b.localizedName),
         ColumnDefinition("Storage #it #boxes #/boxes", lambda b: f"{str(b.get_nb_stored_items()).rjust(3)} {str(b.get_nb_stored_boxes()).rjust(2)} {','.join(['[' + ','.join([str(vv) for vv in v]) + ']' for v in b.get_nb_items_in_stored_boxes()])}"),
@@ -364,8 +364,8 @@ if len(productList) > 0:
     print(f"{fg.brightred}Boxes to merge contents:{fx.reset}")
 
     ConsoleTable.print_objects(productList, [
-        ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
-        ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        #ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        #ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Brand"   , lambda b: b.productSO.brand),
         ColumnDefinition("Name"    , lambda b: b.localizedName),
         ColumnDefinition("Storage #it #boxes #/boxes", lambda b: f"{str(b.get_nb_stored_items()).rjust(3)} {str(b.get_nb_stored_boxes()).rjust(2)} {','.join(['[' + ','.join([str(vv) for vv in v]) + ']' for v in b.get_nb_items_in_stored_boxes()])}"),
@@ -390,8 +390,8 @@ if (len(productList) > 0):
     productList = sorted(productList, key=lambda p: p.get_by_license_sort_key())
 
     productBuyColumns: list[ColumnDefinition[Product]] = [
-        ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
-        ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        #ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        #ColumnDefinition("Lic."    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Brand"   , lambda b: b.productSO.brand),
         ColumnDefinition("Name"    , lambda b: b.localizedName),
         ColumnDefinition("To buy"  , lambda b: b.get_nb_box_to_buy(),
@@ -437,20 +437,20 @@ productList: list[Product] = list(products.values())
 productList = list(filter(lambda p: not p.is_unlocked() and saveData.progression.currentStoreLevel >= p.productSO.license.requiredPlayerLevel, productList))
 
 if (len(productList) > 0):
-    print(f"{fg.brightgreen}Locked products:{fx.reset}")
+    print(f"{fg.brightgreen}Products of next unlockable licenses:{fx.reset}")
 
     productList = sorted(productList, key=lambda p: p.get_by_license_sort_key())
 
     ConsoleTable.print_objects(productList, [
-        ColumnDefinition("Id"                      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
-        ColumnDefinition("Lic."                    , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
-        ColumnDefinition("Brand"                   , lambda b: b.productSO.brand),
-        ColumnDefinition("Name"                    , lambda b: b.localizedName),
+        #ColumnDefinition("Id"                 , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        ColumnDefinition("License id"         , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
+        ColumnDefinition("Brand"              , lambda b: b.productSO.brand),
+        ColumnDefinition("Name"               , lambda b: b.localizedName),
         ColumnDefinition("Price (min-max)"    , lambda b: f"{as_price(b.productSO.minDynamicPrice).rjust(7)}-{as_price(b.productSO.maxDynamicPrice).rjust(7)}", alignment=TextAlignment.RIGHT),
-        ColumnDefinition("#/box"                   , lambda b: b.productSO.productAmountOnPurchase, alignment=TextAlignment.RIGHT),
+        ColumnDefinition("#/box"              , lambda b: b.productSO.productAmountOnPurchase, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Box price (min-max)", lambda b: f"{as_price(b.productSO.minDynamicPrice * b.productSO.productAmountOnPurchase).rjust(7)}-{as_price(b.productSO.maxDynamicPrice * b.productSO.productAmountOnPurchase).rjust(7)}", alignment=TextAlignment.RIGHT),
-        ColumnDefinition("Box size (#/stor.)"      , lambda b: f"{b.productSO.boxSize.name.lower()} ({gameData.boxes.byBoxSize[b.productSO.boxSize].boxCountInStorage})"),
-        ColumnDefinition("Display"                 , lambda b: b.productSO.productDisplayType.name.lower()),
+        ColumnDefinition("Box size (#/stor.)" , lambda b: f"{b.productSO.boxSize.name.lower()} ({gameData.boxes.byBoxSize[b.productSO.boxSize].boxCountInStorage})"),
+        ColumnDefinition("Display"            , lambda b: b.productSO.productDisplayType.name.lower()),
     ])
 
 
