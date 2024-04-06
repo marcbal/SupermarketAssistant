@@ -188,7 +188,7 @@ class Product:
 
 
 # loading save file
-saveData = SaveData.from_live_game_savedir()
+saveData = SaveData.from_live_game_savedir(gameData)
 
 # Initializing general product data
 products: dict[int, Product] = {pId: Product(pSO) for pId, pSO in gameData.products.byId.items()}
@@ -254,7 +254,7 @@ if len(bills) > 0:
 
     ConsoleTable.print_objects(bills, [
         ColumnDefinition("Expense Day", lambda b: b.date, alignment=TextAlignment.RIGHT),
-        ColumnDefinition("Type"       , lambda b: b.paymentType.name.lower()),
+        ColumnDefinition("Type"       , lambda b: gameData.playerPaymentTypeLocalization[b.paymentType.value]),
         ColumnDefinition("Amount"     , lambda b: as_price(b.amount), alignment=TextAlignment.RIGHT),
     ])
     print()
@@ -475,7 +475,7 @@ if (len(unlockableLicenses) > 0):
         ColumnDefinition("#/box"              , lambda b: b.productSO.productAmountOnPurchase, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Box price (min-max)", lambda b: f"{as_price(b.productSO.minDynamicPrice * b.productSO.productAmountOnPurchase).rjust(7)}-{as_price(b.productSO.maxDynamicPrice * b.productSO.productAmountOnPurchase).rjust(7)}", alignment=TextAlignment.RIGHT),
         ColumnDefinition("Box size (#/stor.)" , lambda b: f"{b.productSO.boxSize.name.lower()} ({gameData.boxes.byBoxSize[b.productSO.boxSize].boxCountInStorage})"),
-        ColumnDefinition("Display"            , lambda b: b.productSO.productDisplayType.name.lower()),
+        ColumnDefinition("Display"            , lambda b: gameData.displayTypeLocalization[b.productSO.productDisplayType.value]),
         ColumnDefinition("#/display"          , lambda b: b.productSO.productAmountOnDisplay),
     ]
 

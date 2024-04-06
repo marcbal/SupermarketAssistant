@@ -19,29 +19,24 @@
 # SOFTWARE.
 
 from pathlib import Path
-from enum import Enum
 from es3json import load_es3_json_file
 
+from gamedata import GameData
 
-class PlayerPaymentType(Enum):
-    RENT = 0
-    BILL = 1
-    LOAN = 2
-    STAFF = 3
 
 class Expense:
-    def __init__(self, data):
+    def __init__(self, data, gameData: GameData):
         self.date = int(data["Date"])
         self.amount = float(data["Amount"])
-        self.paymentType = PlayerPaymentType(int(data["PaymentType"]))
+        self.paymentType = gameData.playerPaymentTypeEnum(int(data["PaymentType"]))
         self.latePaymentFee = float(data["LatePaymentFee"])
 
 class SaveDataExpenses:
-    def __init__(self, data):
+    def __init__(self, data, gameData: GameData):
         data = data["value"]
-        self.bills:          list[Expense] = [Expense(d) for d in data["Bills"]]
-        self.rents:          list[Expense] = [Expense(d) for d in data["Rents"]]
-        self.loanRepayments: list[Expense] = [Expense(d) for d in data["LoanRepayments"]]
+        self.bills:          list[Expense] = [Expense(d, gameData) for d in data["Bills"]]
+        self.rents:          list[Expense] = [Expense(d, gameData) for d in data["Rents"]]
+        self.loanRepayments: list[Expense] = [Expense(d, gameData) for d in data["LoanRepayments"]]
 
 
 
@@ -121,26 +116,26 @@ class SaveData:
 
     saveDir: Path = Path.home().joinpath("AppData", "LocalLow", "Nokta Games", "Supermarket Simulator")
 
-    def __init__(self, data, mtime: float):
+    def __init__(self, data, mtime: float, gameData: GameData):
         self.rawData = data
         self.modificationTime: float = mtime
 
-        self.expenses = SaveDataExpenses(data["Expenses"])
+        self.expenses = SaveDataExpenses(data["Expenses"], gameData)
         self.price = SaveDataPrice(data["Price"])
         self.progression = SaveDataProgression(data["Progression"])
 
 
     @staticmethod
-    def from_file(path: Path):
-        return SaveData(load_es3_json_file(path), path.stat().st_mtime)
+    def from_file(path: Path, gameData: GameData):
+        return SaveData(load_es3_json_file(path), path.stat().st_mtime, gameData)
     
     @staticmethod
-    def from_live_game_savedir():
+    def from_live_game_savedir(gameData: GameData):
         saves = [f for f in SaveData.saveDir.glob("*.es3")]
         saves = sorted(saves, key=lambda f: -f.stat().st_mtime)
         if len(saves) == 0:
             print("No savefile found in game save folder")
             return None
-        return SaveData.from_file(saves[0])
+        return SaveData.from_file(saves[0], gameData)
 
 

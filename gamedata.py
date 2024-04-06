@@ -24,45 +24,26 @@ from es3json import load_es3_json_file
 from animationcurves import AnimationCurve
 
 
-class BoxSize(Enum):
-    """Enum extracted from source code BoxSize.cs."""
-
-    _8x8x8 = 0
-    _20x10x7 = 1
-    _20x20x10 = 2
-    _20x20x20 = 3
-    _30x20x20 = 4
-    _15x15x15 = 5
-    _40x26x26 = 6 # for furniture
-
-
-class DisplayType(Enum):
-    """Enum extracted from source code DisplayType.cs."""
-
-    FREEZER = 0
-    FRIDGE = 1
-    CRATE = 2
-    SHELF = 3
-
 
 
 
 class ProductSO:
     """Static data of a product from the game sources."""
 
-    def __init__(self, soData):
+    def __init__(self, soData, boxSizeEnum: type[Enum], displayTypeEnum: type[Enum], productCategoryEnum: type[Enum]):
         self.assetId = int(soData["_ES3Ref"])
         self.id = int(soData["ID"])
         self.productName = soData["ProductName"]
         self.brand = soData["ProductBrand"]
-        self.productDisplayType = DisplayType(int(soData["ProductDisplayType"]))
+        self.productDisplayType = displayTypeEnum(int(soData["ProductDisplayType"]))
+        self.category = productCategoryEnum(int(soData["Category"]))
         self.productAmountOnPurchase = int(soData["ProductAmountOnPurchase"])
         self.basePrice = float(soData["BasePrice"])
         self.minDynamicPrice = float(soData["MinDynamicPrice"])
         self.maxDynamicPrice = float(soData["MaxDynamicPrice"])
         self.optimumProfitRate = float(soData["OptimumProfitRate"])
         self.maxProfitRate = float(soData["MaxProfitRate"])
-        self.boxSize = BoxSize(int(soData["GridLayoutInBox"]["boxSize"]))
+        self.boxSize = boxSizeEnum(int(soData["GridLayoutInBox"]["boxSize"]))
         self.productAmountOnDisplay = int(soData["GridLayoutInStorage"]["productCount"])
 
         self.license: ProductLicenseSO = None
@@ -71,12 +52,12 @@ class ProductSO:
 
 class ProductsCollection:
 
-    def __init__(self, data):
+    def __init__(self, data, boxSizeEnum: type[Enum], displayTypeEnum: type[Enum], productCategoryEnum: type[Enum]):
         data = data["value"]
         self.byId: dict[int, ProductSO] = {}
         self.byAssetId: dict[int, ProductSO] = {}
         for soData in data:
-            productSO: ProductSO = ProductSO(soData)
+            productSO: ProductSO = ProductSO(soData, boxSizeEnum, displayTypeEnum, productCategoryEnum)
             self.byId[productSO.id] = productSO
             self.byAssetId[productSO.assetId] = productSO
 
@@ -123,23 +104,23 @@ class ProductLicensesCollection:
 class BoxSO:
     """Static data of a box size from the game sources."""
 
-    def __init__(self, soData):
+    def __init__(self, soData, boxSizeEnum: type[Enum]):
         self.assetId = int(soData["_ES3Ref"])
         self.id = int(soData["ID"])
-        self.boxSize = BoxSize(int(soData["BoxSize"]))
+        self.boxSize = boxSizeEnum(int(soData["BoxSize"]))
         self.boxCountInStorage = int(soData["GridLayout"]["boxCount"])
         
 
 
 class BoxesCollection:
 
-    def __init__(self, data):
+    def __init__(self, data, boxSizeEnum: type[Enum]):
         data = data["value"]
         self.byId: dict[int, BoxSO] = {}
-        self.byBoxSize: dict[BoxSize, BoxSO] = {}
+        self.byBoxSize: dict[Enum, BoxSO] = {}
         self.byAssetId: dict[int, BoxSO] = {}
         for soData in data:
-            plSO = BoxSO(soData)
+            plSO = BoxSO(soData, boxSizeEnum)
             self.byId[plSO.id] = plSO
             self.byBoxSize[plSO.boxSize] = plSO
             self.byAssetId[plSO.assetId] = plSO
@@ -162,11 +143,20 @@ class GameData:
     def __init__(self, data):
         self.rawData = data
 
-        self.products = ProductsCollection(data["products"])
+        self.boxSizeEnum = Enum('BoxSize', data["boxsize-enum"]["value"])
+        self.playerPaymentTypeEnum = Enum('PlayerPaymentType', data["playerpaymenttype-enum"]["value"])
+        self.displayTypeEnum = Enum('DisplayType', data["displaytype-enum"]["value"])
+        self.productCategoryEnum = Enum('ProductCategory', data["productcategory-enum"]["value"])
+        self.products = ProductsCollection(data["products"], self.boxSizeEnum, self.displayTypeEnum, self.productCategoryEnum)
         self.licenses = ProductLicensesCollection(data["licenses"], self.products)
-        self.boxes = BoxesCollection(data["boxes"])
+        self.boxes = BoxesCollection(data["boxes"], self.boxSizeEnum)
         self.priceCurves = PriceCurves(data["price-curves"])
         self.productLocalization: dict[int, str] = data["products-localization"]["value"]
+        self.licensesLocalization: dict[int, str] = data["licenses-localization"]["value"]
+        self.playerPaymentTypeLocalization: dict[int, str] = data["playerpaymenttype-localization"]["value"]
+        for k in self.playerPaymentTypeLocalization.keys():
+            self.playerPaymentTypeLocalization[k] = self.playerPaymentTypeLocalization[k].strip(" :")
+        self.displayTypeLocalization: dict[int, str] = data["displaytype-localization"]["value"]
 
 
     @staticmethod

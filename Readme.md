@@ -17,7 +17,7 @@ Since I don't (yet) know how to package a mod for this game, You need to be able
 Here is my process:
 - If the game is running, stop it (don't forget to save your progress).
 - Use **dnSpy** and open the file `(game install folder)/Supermarket Simulator_Data/Managed/Assembly-CSharp.dll`.
-- Follow the modifications shown in the file at `mods/extract-data.txt` from this project folder.
+- Follow the modifications shown in the file `mods/extract-data.diff` from this project folder.
 - In **dnSpy**, save the modifications (**File** -> **Save the module**).
 - Start the game and continue your saved progress. It will create a file in the save folder of the game, that the script will read, along with your save file.
 
