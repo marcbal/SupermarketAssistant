@@ -129,6 +129,35 @@ class BoxesCollection:
 
 
 
+class CashierSO:
+    """Static data of a cashier from the game sources."""
+
+    def __init__(self, soData):
+        self.assetId = int(soData["_ES3Ref"])
+        self.id = int(soData["ID"])
+        self.cashierName = str(soData["CashierName"])
+        self.dailyWage = float(soData["DailyWage"])
+        self.hiringCost = float(soData["HiringCost"])
+        self.checkoutGoalToUnlock = int(soData["CheckoutGoalToUnlock"])
+        self.requiredStoreLevel = int(soData["RequiredStoreLevel"])
+        
+
+
+class CashiersCollection:
+
+    def __init__(self, data):
+        data = data["value"]
+        self.byId: dict[int, CashierSO] = {}
+        self.byAssetId: dict[int, CashierSO] = {}
+        for soData in data:
+            cSO = CashierSO(soData)
+            self.byId[cSO.id] = cSO
+            self.byAssetId[cSO.assetId] = cSO
+
+
+
+
+
 class PriceCurves:
 
     def __init__(self, data):
@@ -150,6 +179,7 @@ class GameData:
         self.products = ProductsCollection(data["products"], self.boxSizeEnum, self.displayTypeEnum, self.productCategoryEnum)
         self.licenses = ProductLicensesCollection(data["licenses"], self.products)
         self.boxes = BoxesCollection(data["boxes"], self.boxSizeEnum)
+        self.cashiers = CashiersCollection(data["cashiers"])
         self.priceCurves = PriceCurves(data["price-curves"])
         self.productLocalization: dict[int, str] = data["products-localization"]["value"]
         self.licensesLocalization: dict[int, str] = data["licenses-localization"]["value"]

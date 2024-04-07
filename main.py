@@ -265,16 +265,27 @@ playerMoneyAfterBills = saveData.progression.money - billsSum
 # ############################# Show pricing data #############################
 # #############################################################################
 
+maxCheckoutsToDo = max([c.checkoutGoalToUnlock for c in gameData.cashiers.byId.values()])
+exactPrices = saveData.progression.completedCheckoutCount >= maxCheckoutsToDo
+
 productList: list[Product] = list(products.values())
 productList = list(filter(lambda p: p.is_unlocked(), productList))
-#productList = list(filter(lambda p: abs(p.get_sell_price_for_best_profit_per_chance() - p.selling_price()) > 0.01, productList))
-productList = list(filter(lambda p: abs(p.get_best_rounded_price() - p.selling_price()) > 0.01, productList))
+if exactPrices:
+    productList = list(filter(lambda p: abs(p.get_sell_price_for_best_profit_per_chance() - p.selling_price()) > 0.01, productList))
+else:
+    productList = list(filter(lambda p: abs(p.get_best_rounded_price() - p.selling_price()) > 0.01, productList))
 
 if len(productList) > 0:
     productList = sorted(productList, key=lambda p: p.get_by_license_sort_key())
     
     print(f"{fg.brightred}Products to update prices:{fx.reset}")
 
+    if exactPrices:
+        print(f"{fg.green}Using exact prices because you have reached the maximum checkout goal to hire all cashiers.{fx.reset}")
+    else:
+        remainingCheckouts = maxCheckoutsToDo - saveData.progression.completedCheckoutCount
+        print(f"{fg.green}Using rounded prices because you still need to do {remainingCheckouts} checkout{'s' if remainingCheckouts > 1 else ''} before you can hire all cashiers.{fx.reset}")
+        
     ConsoleTable.print_objects(productList, [
         #ColumnDefinition("Id"           , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
         #ColumnDefinition("Lic."         , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
@@ -287,9 +298,9 @@ if len(productList) > 0:
         ColumnDefinition("Opt $"        , lambda b: as_price(b.optimum_price()), alignment=TextAlignment.RIGHT),
         ColumnDefinition("Opt+ $"       , lambda b: as_price(b.optimum_price_100prcent_sell()), alignment=TextAlignment.RIGHT),
         ColumnDefinition("Opt00$/chance", lambda b: as_price(b.get_best_rounded_price()) + f"-{str(round(b.get_purchase_chance_of_sell_price(b.get_best_rounded_price()))).rjust(3)}%",
-                                          lambda b: fg.brightgreen, alignment=TextAlignment.RIGHT),
+                                          lambda b: "" if exactPrices else fg.brightgreen, alignment=TextAlignment.RIGHT),
         ColumnDefinition("Opt++$/chance", lambda b: as_price(b.get_sell_price_for_best_profit_per_chance()) + f"-{str(round(b.get_purchase_chance_of_sell_price(b.get_sell_price_for_best_profit_per_chance()))).rjust(3)}%",
-                                          lambda b: fg.green, alignment=TextAlignment.RIGHT),
+                                          lambda b: fg.brightgreen if exactPrices else "", alignment=TextAlignment.RIGHT),
         ColumnDefinition("Max $"        , lambda b: as_price(b.max_price()), alignment=TextAlignment.RIGHT),
         ColumnDefinition("Sell $/chance", lambda b: as_price(b.selling_price()) + f"-{str(round(b.get_purchase_chance(), 1)).rjust(5)}%",
                                           lambda b: fg.red, alignment=TextAlignment.RIGHT),
@@ -298,8 +309,6 @@ if len(productList) > 0:
         #ColumnDefinition("Avg cost"     , lambda b: as_price(b.averageCosts), alignment=TextAlignment.RIGHT),
         ColumnDefinition("Price change" , lambda b: "" if b.dailyPriceChange is None else f"{as_price(b.previousPrice)} -> {as_price(b.dailyPriceChange)}",
                                           alignment=TextAlignment.RIGHT),
-        #ColumnDefinition("Prev. price"  , lambda b: as_price(b.previousPrice),
-        #                                  lambda b: fg.darkgray if b.previousPrice is None else "", alignment=TextAlignment.RIGHT)
     ])
     print()
 
