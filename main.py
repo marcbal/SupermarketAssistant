@@ -18,14 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from ansi.colour import fg, fx
 import math
 from datetime import datetime
 
-from consoletable import ConsoleTable, ColumnDefinition, TextAlignment
+from ansi.colour import fg, fx
+
 from animationcurves import inverse_lerp, lerp, local_max
-from savefile import SaveData, DisplaySlot, RackSlot, Box
+from consoletable import ConsoleTable, ColumnDefinition, TextAlignment
 from gamedata import GameData, ProductSO, ProductLicenseSO
+from savefile import SaveData, DisplaySlot, RackSlot, Box
 
 
 

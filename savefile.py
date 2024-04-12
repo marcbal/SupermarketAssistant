@@ -19,8 +19,9 @@
 # SOFTWARE.
 
 from pathlib import Path
-from es3json import load_es3_json_file
+from typing import Union
 
+from es3json import load_es3_json_file
 from gamedata import GameData
 
 
@@ -130,12 +131,20 @@ class SaveData:
         return SaveData(load_es3_json_file(path), path.stat().st_mtime, gameData)
     
     @staticmethod
-    def from_live_game_savedir(gameData: GameData):
+    def get_last_save_path() -> Union[Path, None]:
         saves = [f for f in SaveData.saveDir.glob("*.es3")]
         saves = sorted(saves, key=lambda f: -f.stat().st_mtime)
         if len(saves) == 0:
+            return None
+        return saves[0]
+
+    
+    @staticmethod
+    def from_live_game_savedir(gameData: GameData):
+        savePath = SaveData.get_last_save_path()
+        if savePath is None:
             print("No savefile found in game save folder")
             return None
-        return SaveData.from_file(saves[0], gameData)
+        return SaveData.from_file(savePath, gameData)
 
 

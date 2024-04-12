@@ -19,10 +19,11 @@
 # SOFTWARE.
 
 import enum
-from ansi.colour import fg, fx
 import os
 from typing import TypeVar, Generic, Any
 from collections.abc import Callable
+
+from ansi.colour import fg, fx
 
 
 

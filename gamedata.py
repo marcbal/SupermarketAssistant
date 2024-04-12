@@ -20,8 +20,9 @@
 
 from pathlib import Path
 from enum import Enum
-from es3json import load_es3_json_file
+
 from animationcurves import AnimationCurve
+from es3json import load_es3_json_file
 
 
 
@@ -192,13 +193,13 @@ class GameData:
     @staticmethod
     def from_file(path):
         return GameData(load_es3_json_file(path))
-
+    
     @staticmethod
-    def from_workdir():
-        return GameData.from_file("game-data.dat")
+    def get_path():
+        return Path.home().joinpath("AppData", "LocalLow", "Nokta Games", "Supermarket Simulator", "game-data.dat")
     
     @staticmethod
     def from_live_game_savedir():
-        return GameData.from_file(Path.home().joinpath("AppData", "LocalLow", "Nokta Games", "Supermarket Simulator", "game-data.dat"))
+        return GameData.from_file(GameData.get_path())
 
 
