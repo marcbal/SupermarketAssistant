@@ -8,7 +8,7 @@ The script works by reading your save file and telling you what to do next (pay 
 ### 1. Install python
 
 A recent version is recommended (for me it works using Python 3.9).
-Install the `ansi` module using the command `pip install ansi`
+Install the requirements with `pip install -r requirements.txt`
 
 ### 2. Modify the game
 
@@ -25,7 +25,7 @@ Here is my process:
 
 From your terminal or command prompt, use the following command:
 ```bash
-python main.py
+python src
 ```
 
 You need to run the script again every time you save your progress (or after each day).

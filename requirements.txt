@@ -1,0 +1,2 @@
+ansi==0.3.7
+pyinstaller==6.6.0

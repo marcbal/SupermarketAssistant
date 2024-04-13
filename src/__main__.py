@@ -28,6 +28,9 @@ from consoletable import ConsoleTable, ColumnDefinition, TextAlignment
 from filewatcher import FileWatcher
 from gamedata import ProductSO, ProductLicenseSO
 from savefile import DisplaySlot, RackSlot, Box
+from windows_console import enable_coloring_in_windows_console
+
+enable_coloring_in_windows_console()
 
 
 
