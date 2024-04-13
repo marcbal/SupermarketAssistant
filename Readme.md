@@ -1,36 +1,33 @@
 # Supermarket Assistant
 
-A python script to assist you in managing your supermarket in the game *Supermarket Simulator* from *Nokta Games*.
-The script works by reading your save file and telling you what to do next (pay your bill, displays to fill in the store, what to order and the amount, ...).
+A python program to assist you in managing your supermarket in the game *Supermarket Simulator* from *Nokta Games*.
+It works by reading your save file and telling you what to do next (bills to pay, store shelf to fill, what to order and the amount, ...).
 
-## Setup
+## How to use
 
-### 1. Install python
-
-A recent version is recommended (for me it works using Python 3.9).
-Install the requirements with `pip install -r requirements.txt`
-
-### 2. Modify the game
+### 1. Modify the game
 
 You need to modify the game to be able to have some informations from it (the list of all products, their name, the product licenses, ...).
 Since I don't (yet) know how to package a mod for this game, You need to be able to modify it yourself.
 Here is my process:
 - If the game is running, stop it (don't forget to save your progress).
 - Use **dnSpy** and open the file `(game install folder)/Supermarket Simulator_Data/Managed/Assembly-CSharp.dll`.
-- Follow the modifications shown in the file `mods/extract-data.diff` from this project folder.
+- Modify the source of the game as shown in [this file](mods/extract-data.diff).
 - In **dnSpy**, save the modifications (**File** -> **Save the module**).
-- Start the game and continue your saved progress. It will create a file in the save folder of the game, that the script will read, along with your save file.
+- Start the game and continue your saved progress. It will create a file in the save folder of the game, that the program will read, along with your save file.
 
-### 3. Run the script
+### 2. Download and run the program
 
-From your terminal or command prompt, use the following command:
-```bash
-python src
-```
+[Download from here](https://github.com/marcbal/SupermarketAssistant/releases) and run the executable.
+It will open a terminal window and load all the necessary data from the game.
+The content of the window will automatically refreh when the game is saved.
 
-You need to run the script again every time you save your progress (or after each day).
+## Run from the source
 
+1. Install a recent version of python (for me it works using Python 3.9).
+2. Install the requirements with `pip install -r requirements.txt`
+3. Run the program with `python src`
 
 ## Extra
 
-This repo also provides some extra modifications you can do to the game to make it a little better: you can see them in the `mods` folder.
+This repo also provides some extra modifications you can do to the game to make it a little better: you can see them in the [mods](mods) folder.

@@ -1,3 +1,3 @@
 #/bin/sh
 
-pyinstaller -y -F -n SupermarketHelper src/__main__.py
+pyinstaller -y -F -n SupermarketAssistant src/__main__.py
