@@ -325,16 +325,19 @@ while True:
     # #############################################################################
 
     productList: list[Product] = list(products.values())
-    productList = list(filter(lambda p: p.is_unlocked(), productList))
-    productList = list(filter(lambda p: (len(p.displaySlots) == 0
-                            or p.get_nb_displayed_items() < p.get_max_displayed_items_total())
-                            and (p.get_nb_stored_items() + p.get_nb_unstored_box_items()) > 0 # dont show here is there is no items in storage or unstored boxes
-                            , productList))
+    productList = list(filter(lambda p: p.is_unlocked(), productList)) # filter unlocked
+    productList = list(filter(lambda p: (len(p.displaySlots) == 0 or p.get_nb_displayed_items() < p.get_max_displayed_items_total()), productList)) # keep products with no display slot or when existing slots are not full
+    productList = list(filter(lambda p: (p.get_nb_stored_items() + p.get_nb_unstored_box_items()) > 0, productList)) # keep product that have stock in existing boxes
+    if len(saveData.employees.restockers) > 0: # if there is restockers
+        productList = list(filter(lambda p: p.get_nb_stored_items() < p.get_max_displayed_items_total() - p.get_nb_displayed_items() and p.get_nb_unstored_box_items() > 0, productList)) # keep product that restockers can't fully restock themselves
 
     if len(productList) > 0:
         productList = sorted(productList, key=lambda p: p.get_by_license_sort_key())
 
-        print(f"{fg.brightred}Displays to fill in the store:{fx.reset}")
+        if len(saveData.employees.restockers) > 0: # if there is restockers
+            print(f"{fg.brightred}Store shelves that restockers can't fully restock themselves:{fx.reset}")
+        else:
+            print(f"{fg.brightred}Store shelves to fill:{fx.reset}")
 
         ConsoleTable.print_objects(productList, [
             #ColumnDefinition("Id"      , lambda b: b.productSO.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
@@ -459,6 +462,7 @@ while True:
         if len(productListNonUrgent) > 0:
             print(f"{fg.red}Boxes to buy eventually:{fx.reset}")
 
+            productListNonUrgent.sort(key=lambda p: p.get_by_license_sort_key())
             total = sum([b.get_nb_box_to_buy() * b.currentPrice * b.productSO.productAmountOnPurchase for b in productListNonUrgent])
             ConsoleTable.print_objects(productListNonUrgent, productBuyColumns)
             print(f"{fg.brightblue}Total amount without shipping: {fg.boldcyan}{as_price(total)}{fx.reset}")

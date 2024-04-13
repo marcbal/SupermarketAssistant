@@ -113,6 +113,15 @@ class SaveDataProgression:
         pass
 
 
+        
+
+class SaveDataEmployees:
+    def __init__(self, data):
+        data = data["value"]
+        self.cashiers:   list[int] = data["CashiersData"]
+        self.restockers: list[int] = data["RestockersData"]
+
+
 class SaveData:
 
     saveDir: Path = Path.home().joinpath("AppData", "LocalLow", "Nokta Games", "Supermarket Simulator")
@@ -124,6 +133,7 @@ class SaveData:
         self.expenses = SaveDataExpenses(data["Expenses"], gameData)
         self.price = SaveDataPrice(data["Price"])
         self.progression = SaveDataProgression(data["Progression"])
+        self.employees = SaveDataEmployees(data["Employees"])
 
 
     @staticmethod
