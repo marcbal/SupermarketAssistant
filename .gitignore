@@ -1,5 +1,4 @@
 __pycache__
 /dist
 /build
-/__main__.spec
-/SupermarketAssistant.spec
+/*.spec

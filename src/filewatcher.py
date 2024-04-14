@@ -1,3 +1,23 @@
+# Copyright (c) 2024 Marc Baloup
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 from pathlib import Path
 from time import sleep
 from typing import Union
@@ -12,11 +32,11 @@ from savefile import SaveData
 class FileWatcher:
 
     def __init__(self):
-        self.gameDataLastUpdate = 0
+        self.gameDataLastUpdate = 0.0
         self.gameDataRaw = None
         self.gameData: GameData = None
 
-        self.saveDataLastUpdate = 0
+        self.saveDataLastUpdate = 0.0
         self.saveDataRaw = None
         self.saveData: SaveData = None
 
@@ -34,8 +54,10 @@ class FileWatcher:
                 print(f"Error: {path} is not a regular file.")
                 return
             self.gameDataLastUpdate = time
+            print("Reading game data file...")
             self.gameDataRaw = load_es3_json_file(path)
             self.parse_game_data()
+            print("Loaded game data.")
         except:
             self.gameDataLastUpdate = oldUpdateTime
             self.gameDataRaw = oldDataRaw
@@ -45,6 +67,7 @@ class FileWatcher:
         if self.gameDataRaw is None:
             self.gameData = None
         else:
+            print("Parsing game data file...")
             self.gameData = GameData(self.gameDataRaw)
             self.parse_save_data() # when game data is updated, the save data instance must be updated too (but we don't need to reload the file itself)
     
@@ -63,8 +86,10 @@ class FileWatcher:
                 print(f"Error: {path} is not a regular file.")
                 return
             self.saveDataLastUpdate = time
+            print("Reading save data file...")
             self.saveDataRaw = load_es3_json_file(path)
             self.parse_save_data()
+            print("Loaded save data.")
         except:
             self.saveDataLastUpdate = oldUpdateTime
             self.saveDataRaw = oldDataRaw
@@ -74,6 +99,7 @@ class FileWatcher:
         if self.saveDataRaw is None or self.gameData is None:
             self.saveData = None
         else:
+            print("Parsing save data file...")
             self.saveData = SaveData(self.saveDataRaw, self.saveDataLastUpdate, self.gameData)
 
     
@@ -81,12 +107,16 @@ class FileWatcher:
         while True:
             try:
                 willReturn = False
+                gameDataFirstLoad = self.gameDataLastUpdate == 0.0
                 if self.has_game_data_updated():
-                    sleep(1)
+                    if not gameDataFirstLoad:
+                        sleep(1) # wait to be sure the game have written all the file
                     self.load_game_data()
                     willReturn = True
+                saveDataFirstLoad = self.saveDataLastUpdate == 0.0
                 if self.has_save_data_updated():
-                    sleep(1)
+                    if not saveDataFirstLoad:
+                        sleep(1) # wait to be sure the game have written all the file
                     self.load_save_data()
                     willReturn = True
                 if willReturn:

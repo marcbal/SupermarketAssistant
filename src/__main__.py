@@ -23,11 +23,10 @@ from datetime import datetime
 
 from ansi.colour import fg, fx
 
-from animationcurves import inverse_lerp, lerp, local_max
 from consoletable import ConsoleTable, ColumnDefinition, TextAlignment
 from filewatcher import FileWatcher
-from gamedata import ProductSO, ProductLicenseSO
-from savefile import DisplaySlot, RackSlot, Box
+from gamedata import ProductLicenseSO
+from products import ProductsData, Product
 from windows_console import enable_coloring_in_windows_console
 
 enable_coloring_in_windows_console()
@@ -41,201 +40,15 @@ def as_price(value: float) -> str:
 watcher = FileWatcher()
 
 
-class Product:
-
-    def __init__(self, pSO: ProductSO):
-        self.productSO = pSO
-        self.localizedName = watcher.gameData.productLocalization[pSO.id]
-
-        self.licenseUnlockIndex: int = None
-
-        self.currentPrice: float = None
-        self.sellPriceSetByPlayer: float = None
-        self.averageCosts: float = None
-        self.dailyPriceChange: float = None
-        self.previousPrice: float = None
-
-        self.displaySlots: list[DisplaySlot] = []
-        self.rackSlots: list[RackSlot] = []
-        self.unstoredBoxes: list[Box] = []
-    
-    def get_by_license_sort_key(self):
-        if self.licenseUnlockIndex is None:
-            # ensure non purchased licenses are after purchased licenses
-            return (1000000 + self.productSO.license.id, self.productSO.id)
-        return (self.licenseUnlockIndex, self.productSO.indexInLicense)
-
-    def selling_price(self):
-        return self.sellPriceSetByPlayer if self.sellPriceSetByPlayer is not None else self.currentPrice
-
-    def is_unlocked(self):
-        return self.licenseUnlockIndex is not None
-    
-    def profit_rate_of_sell_price(self, sell_price: float):
-        return (sell_price - self.currentPrice) * 100 / self.currentPrice
-    
-    def current_profit_rate(self):
-        return self.profit_rate_of_sell_price(self.selling_price())
-    
-    def optimum_price(self):
-        return self.currentPrice + self.currentPrice * self.productSO.optimumProfitRate / 100
-    
-    def optimum_price_100prcent_sell(self):
-        return self.currentPrice + self.currentPrice * lerp(self.productSO.optimumProfitRate, self.productSO.maxProfitRate, 0.1) / 100
-    
-    def max_price(self):
-        return self.currentPrice + self.currentPrice * self.productSO.maxProfitRate / 100
-
-    def get_purchase_chance_of_sell_price(self, sell_price: float):
-        profitRate = self.profit_rate_of_sell_price(sell_price)
-        optiProfitRate = self.productSO.optimumProfitRate
-        maxProfitRate = self.productSO.maxProfitRate
-        if profitRate < 0:
-            return 200.0
-        if profitRate < optiProfitRate:
-            t = inverse_lerp(0, optiProfitRate, profitRate)
-            return watcher.gameData.priceCurves.purchaseChanceCurveForCheapPrice.evaluate(t)
-        if profitRate < maxProfitRate:
-            t = inverse_lerp(optiProfitRate, maxProfitRate, profitRate)
-            return watcher.gameData.priceCurves.purchaseChanceCurveForExpensivePrice.evaluate(t)
-        return 0.0
-
-    
-    def get_purchase_chance(self) -> float:
-        return self.get_purchase_chance_of_sell_price(self.selling_price())
-    
-    def get_profit_per_chance_of_sell_price(self, sell_price: float) -> float:
-        return (sell_price - self.currentPrice) * self.get_purchase_chance_of_sell_price(sell_price) / 100
-    
-    def get_profit_per_chance(self) -> float:
-        return self.get_profit_per_chance_of_sell_price(self.selling_price())
-
-    def get_sell_price_for_best_profit_per_chance(self) -> float:
-        if not hasattr(self, "sellPriceForBestProfitPerChance"):
-            self.sellPriceForBestProfitPerChance = local_max(lambda p: self.get_profit_per_chance_of_sell_price(p), self.optimum_price(), self.max_price(), 0.001)
-        return self.sellPriceForBestProfitPerChance
-
-    def get_best_rounded_price(self) -> float:
-        pOpt = math.ceil(self.optimum_price() * 0.95) # 0.95 to authorize an integer price that is 5% below optimized price
-        pBest = math.floor(self.get_sell_price_for_best_profit_per_chance())
-        if pOpt <= pBest:
-            return pBest
-        pMin = min(pOpt, pBest)
-        pMax = max(pOpt, pBest)
-        if self.get_profit_per_chance_of_sell_price(pMin) > self.get_profit_per_chance_of_sell_price(pMax):
-            return pMin
-        return pMax
-    
-
-
-
-    
-
-    def get_nb_displayed_items_per_slot(self):
-        return [s.productCount for s in self.displaySlots]
-    
-    def get_nb_displayed_items(self):
-        return sum(self.get_nb_displayed_items_per_slot() + [0])
-    
-    def get_max_displayed_items_total(self):
-        return len(self.displaySlots) * self.productSO.productAmountOnDisplay
-    
-    def get_nb_items_in_stored_boxes(self):
-        return [[b.productCount for b in s.rackedBoxDatas] for s in self.rackSlots]
-
-    def get_nb_stored_boxes(self):
-        return sum([len(s.rackedBoxDatas) for s in self.rackSlots] + [0])
-
-    def get_nb_box_spots_in_storage(self):
-        return (len(self.rackSlots) * watcher.gameData.boxes.byBoxSize[self.productSO.boxSize].boxCountInStorage) - self.get_nb_stored_boxes()
-    
-    def get_nb_stored_items(self):
-        return sum([sum(l) for l in self.get_nb_items_in_stored_boxes()])
-
-    def get_nb_unstored_boxes(self):
-        return len(self.unstoredBoxes)
-    
-    def get_nb_items_in_unstored_boxes(self):
-        return [b.productCount for b in self.unstoredBoxes]
-    
-    def get_nb_unstored_box_items(self):
-        return sum(self.get_nb_items_in_unstored_boxes())
-    
-    def get_nb_items_in_all_boxes(self):
-        tab = self.get_nb_items_in_unstored_boxes()
-        for slot in self.get_nb_items_in_stored_boxes():
-            tab += slot
-        return tab
-    
-    def get_nb_items_in_all_nonfull_boxes(self):
-        boxes = self.get_nb_items_in_all_boxes()
-        max = self.productSO.productAmountOnPurchase
-        return [b for b in boxes if b < max]
-    
-    def get_nb_items_total(self):
-        return self.get_nb_displayed_items() + self.get_nb_stored_items() + self.get_nb_unstored_box_items()
-    
-    def get_max_displayable_and_storable_items(self):
-        return self.get_max_displayed_items_total() + len(self.rackSlots) * gameData.boxes.byBoxSize[self.productSO.boxSize].boxCountInStorage * self.productSO.productAmountOnPurchase
-    
-    def get_nb_box_to_buy(self):
-        return (self.get_max_displayable_and_storable_items() - self.get_nb_items_total()) // self.productSO.productAmountOnPurchase
-    
-    def get_max_storable_boxes(self):
-        return len(self.rackSlots) * gameData.boxes.byBoxSize[self.productSO.boxSize].boxCountInStorage
-
-    def get_estimated_duration_stock_emptying(self) -> float:
-        """Will try to compute an estimation of how long it will take to empty the current stock of this product.
-        The returned value has no specific unit, it is only used to sort the product to prioritize orders."""
-        return self.get_nb_items_total() / (self.get_purchase_chance() / 100)
-
-
-
-
-
 while True:
     watcher.wait_update()
     gameData = watcher.gameData
     saveData = watcher.saveData
 
-    # Initializing general product data
-    products: dict[int, Product] = {pId: Product(pSO) for pId, pSO in gameData.products.byId.items()}
-
-    # getting live product data (license unlock, price, stock) from save file
-    for i, plId in enumerate(saveData.progression.unlockedLicenses):
-        for pSO in gameData.licenses.byId[plId].products:
-            products[pSO.id].licenseUnlockIndex = i
-
-    for e in saveData.price.prices:
-        products[e.productId].currentPrice = e.price
-    for e in saveData.price.pricesSetByPlayer:
-        products[e.productId].sellPriceSetByPlayer = e.price
-    for e in saveData.price.averageCosts:
-        products[e.productId].averageCosts = e.price
-    for e in saveData.price.dailyPriceChanges:
-        products[e.productId].dailyPriceChange = e.price
-    for e in saveData.price.previousPrices:
-        products[e.productId].previousPrice = e.price
-
-    for display in saveData.progression.displayDatas:
-        for slot in display.displaySlots:
-            if slot.productId is not None:
-                products[slot.productId].displaySlots.append(slot)
-    for rack in saveData.progression.rackDatas:
-        for slot in rack.rackSlots:
-            if slot.productId is not None:
-                products[slot.productId].rackSlots.append(slot)
-    for box in saveData.progression.boxDatas:
-        if box.productId in products:
-            products[box.productId].unstoredBoxes.append(box)
+    productsData = ProductsData(gameData, saveData)
 
 
-
-
-
-
-
-    print("\n" * 100 + "\033c", end="")
+    print("\033c", end="")
 
     # #############################################################################
     # ############################### General data ################################
@@ -277,15 +90,13 @@ while True:
     maxCheckoutsToDo = max([c.checkoutGoalToUnlock for c in gameData.cashiers.byId.values()])
     exactPrices = saveData.progression.completedCheckoutCount >= maxCheckoutsToDo
 
-    productList: list[Product] = list(products.values())
-    productList = list(filter(lambda p: p.is_unlocked(), productList))
+    productList: list[Product] = list(productsData.unlocked)
     if exactPrices:
         productList = list(filter(lambda p: abs(p.get_sell_price_for_best_profit_per_chance() - p.selling_price()) > 0.01, productList))
     else:
         productList = list(filter(lambda p: abs(p.get_best_rounded_price() - p.selling_price()) > 0.01, productList))
 
     if len(productList) > 0:
-        productList = sorted(productList, key=lambda p: p.get_by_license_sort_key())
         
         print(f"{fg.brightred}Products to update prices:{fx.reset}")
 
@@ -327,8 +138,7 @@ while True:
     # ############################# Displays to fill ##############################
     # #############################################################################
 
-    productList: list[Product] = list(products.values())
-    productList = list(filter(lambda p: p.is_unlocked(), productList)) # filter unlocked
+    productList: list[Product] = list(productsData.unlocked)
     productList = list(filter(lambda p: (len(p.displaySlots) == 0 or p.get_nb_displayed_items() < p.get_max_displayed_items_total()), productList)) # keep products with no display slot or when existing slots are not full
     productList = list(filter(lambda p: (p.get_nb_stored_items() + p.get_nb_unstored_box_items()) > 0, productList)) # keep product that have stock in existing boxes
     if len(saveData.employees.restockers) > 0: # if there is restockers
@@ -360,8 +170,7 @@ while True:
     # ############################## Boxes to store ###############################
     # #############################################################################
 
-    productList: list[Product] = list(products.values())
-    productList = list(filter(lambda p: p.is_unlocked(), productList))
+    productList: list[Product] = list(productsData.unlocked)
     productList = list(filter(lambda p: p.get_nb_unstored_boxes() > 0 and p.get_nb_box_spots_in_storage() > 0
                             , productList))
 
@@ -386,8 +195,7 @@ while True:
     # ############################## Boxes to merge ###############################
     # #############################################################################
 
-    productList: list[Product] = list(products.values())
-    productList = list(filter(lambda p: p.is_unlocked(), productList))
+    productList: list[Product] = list(productsData.unlocked)
     productList = list(filter(lambda p: math.ceil(sum(p.get_nb_items_in_all_nonfull_boxes()) / p.productSO.productAmountOnPurchase) < len(p.get_nb_items_in_all_nonfull_boxes()), productList))
 
     if len(productList) > 0:
@@ -415,8 +223,7 @@ while True:
 
 
 
-    productList: list[Product] = list(products.values())
-    productList = list(filter(lambda p: p.is_unlocked(), productList))
+    productList: list[Product] = list(productsData.unlocked)
     productList = list(filter(lambda p: p.get_nb_box_to_buy() > 0, productList))
 
     if (len(productList) > 0):
@@ -485,7 +292,7 @@ while True:
     if (len(unlockableLicenses) > 0):
         print(f"{fg.brightgreen}Next unlockable licenses:{fx.reset}")
 
-        licenceColumns: list[ColumnDefinition[ProductLicenseSO]] = [
+        licenseColumns: list[ColumnDefinition[ProductLicenseSO]] = [
             ColumnDefinition("License: Id"        , lambda l: l.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
             ColumnDefinition("Cost"              , lambda l: as_price(l.purchasingCost), alignment=TextAlignment.RIGHT)
         ]
@@ -502,11 +309,9 @@ while True:
         ]
 
         for l in unlockableLicenses:
-            ConsoleTable.print_objects([l], licenceColumns)
-            ConsoleTable.print_objects([products[pSO.id] for pSO in l.products], productColumns)
+            ConsoleTable.print_objects([l], licenseColumns)
+            ConsoleTable.print_objects([productsData.byId[pSO.id] for pSO in l.products], productColumns)
             print()
 
-
-    print()
 
 
