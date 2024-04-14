@@ -54,10 +54,8 @@ class FileWatcher:
                 print(f"Error: {path} is not a regular file.")
                 return
             self.gameDataLastUpdate = time
-            print("Reading game data file...")
             self.gameDataRaw = load_es3_json_file(path)
             self.parse_game_data()
-            print("Loaded game data.")
         except:
             self.gameDataLastUpdate = oldUpdateTime
             self.gameDataRaw = oldDataRaw
@@ -67,7 +65,6 @@ class FileWatcher:
         if self.gameDataRaw is None:
             self.gameData = None
         else:
-            print("Parsing game data file...")
             self.gameData = GameData(self.gameDataRaw)
             self.parse_save_data() # when game data is updated, the save data instance must be updated too (but we don't need to reload the file itself)
     
@@ -86,10 +83,8 @@ class FileWatcher:
                 print(f"Error: {path} is not a regular file.")
                 return
             self.saveDataLastUpdate = time
-            print("Reading save data file...")
             self.saveDataRaw = load_es3_json_file(path)
             self.parse_save_data()
-            print("Loaded save data.")
         except:
             self.saveDataLastUpdate = oldUpdateTime
             self.saveDataRaw = oldDataRaw
@@ -99,7 +94,6 @@ class FileWatcher:
         if self.saveDataRaw is None or self.gameData is None:
             self.saveData = None
         else:
-            print("Parsing save data file...")
             self.saveData = SaveData(self.saveDataRaw, self.saveDataLastUpdate, self.gameData)
 
     

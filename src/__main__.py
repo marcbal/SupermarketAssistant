@@ -111,6 +111,10 @@ while True:
             #ColumnDefinition("Lic."         , lambda b: b.productSO.license.id, lambda _: fg.darkgray, alignment=TextAlignment.RIGHT),
             ColumnDefinition("Name"         , lambda b: b.localizedName),
             ColumnDefinition("Brand"        , lambda b: b.productSO.brand),
+            ColumnDefinition("Curr. $"      , lambda b: as_price(b.selling_price()),
+                                              lambda _: fg.red, alignment=TextAlignment.RIGHT),
+            ColumnDefinition("New $"        , lambda b: as_price(b.get_sell_price_for_best_profit_per_chance() if exactPrices else b.get_best_rounded_price()),
+                                              lambda _: fg.brightgreen, alignment=TextAlignment.RIGHT),
             #ColumnDefinition("Base price"   , lambda b: as_price(b.productSO.basePrice), alignment=TextAlignment.RIGHT),
             #ColumnDefinition("Price range"  , lambda b: f"{as_price(b.productSO.minDynamicPrice)} - {as_price(b.productSO.maxDynamicPrice)}", alignment=TextAlignment.RIGHT),
             ColumnDefinition("Opt/Max rate" , lambda b: f"{round(b.productSO.optimumProfitRate)}%-{str(round(b.productSO.maxProfitRate)).rjust(3)}%", alignment=TextAlignment.RIGHT),
@@ -118,17 +122,15 @@ while True:
             ColumnDefinition("Opt $"        , lambda b: as_price(b.optimum_price()), alignment=TextAlignment.RIGHT),
             ColumnDefinition("Opt+ $"       , lambda b: as_price(b.optimum_price_100prcent_sell()), alignment=TextAlignment.RIGHT),
             ColumnDefinition("Opt00$/chance", lambda b: as_price(b.get_best_rounded_price()) + f"-{str(round(b.get_purchase_chance_of_sell_price(b.get_best_rounded_price()))).rjust(3)}%",
-                                            lambda b: "" if exactPrices else fg.brightgreen, alignment=TextAlignment.RIGHT),
+                                              alignment=TextAlignment.RIGHT),
             ColumnDefinition("Opt++$/chance", lambda b: as_price(b.get_sell_price_for_best_profit_per_chance()) + f"-{str(round(b.get_purchase_chance_of_sell_price(b.get_sell_price_for_best_profit_per_chance()))).rjust(3)}%",
-                                            lambda b: fg.brightgreen if exactPrices else "", alignment=TextAlignment.RIGHT),
+                                              alignment=TextAlignment.RIGHT),
             ColumnDefinition("Max $"        , lambda b: as_price(b.max_price()), alignment=TextAlignment.RIGHT),
-            ColumnDefinition("Sell $/chance", lambda b: as_price(b.selling_price()) + f"-{str(round(b.get_purchase_chance(), 1)).rjust(5)}%",
-                                            lambda b: fg.red, alignment=TextAlignment.RIGHT),
-            ColumnDefinition("Proft/sell"   , lambda b: as_price(b.selling_price() - b.currentPrice), alignment=TextAlignment.RIGHT),
-            ColumnDefinition("Proft*chance" , lambda b: as_price(b.get_profit_per_chance()), alignment=TextAlignment.RIGHT),
+            ColumnDefinition("Curr $/chance", lambda b: as_price(b.selling_price()) + f"-{str(round(b.get_purchase_chance(), 1)).rjust(5)}%", alignment=TextAlignment.RIGHT),
+            ColumnDefinition("Profit/sell"  , lambda b: as_price(b.selling_price() - b.currentPrice), alignment=TextAlignment.RIGHT),
+            #ColumnDefinition("Profit*chance", lambda b: as_price(b.get_profit_per_chance()), alignment=TextAlignment.RIGHT),
             #ColumnDefinition("Avg cost"     , lambda b: as_price(b.averageCosts), alignment=TextAlignment.RIGHT),
-            ColumnDefinition("Price change" , lambda b: "" if b.dailyPriceChange is None else f"{as_price(b.previousPrice)} -> {as_price(b.dailyPriceChange)}",
-                                            alignment=TextAlignment.RIGHT),
+            #ColumnDefinition("Sell price change", lambda b: "" if b.dailyPriceChange is None else f"{as_price(b.previousPrice)} -> {as_price(b.dailyPriceChange)}"),
         ])
         print()
 
@@ -240,9 +242,9 @@ while True:
             ColumnDefinition("Unit $"  , lambda b: as_price(b.currentPrice), alignment=TextAlignment.RIGHT),
             ColumnDefinition("#/box"   , lambda b: b.productSO.productAmountOnPurchase, alignment=TextAlignment.RIGHT),
             ColumnDefinition("Box $"   , lambda b: as_price(b.currentPrice * b.productSO.productAmountOnPurchase), alignment=TextAlignment.RIGHT),
-            ColumnDefinition("Prio"    , lambda b: round(b.get_estimated_duration_stock_emptying(), 1), alignment=TextAlignment.RIGHT),
-            ColumnDefinition("Storage #it #boxes #/boxes", lambda b: f"{str(b.get_nb_stored_items()).rjust(3)} {str(b.get_nb_stored_boxes()).rjust(2)} {','.join(['[' + ','.join([str(vv) for vv in v]) + ']' for v in b.get_nb_items_in_stored_boxes()])}"),
-            ColumnDefinition("Unstored", lambda b: f"{str(b.get_nb_unstored_box_items()).rjust(3)} {str(b.get_nb_unstored_boxes()).rjust(2)} [{','.join([str(v) for v in b.get_nb_items_in_unstored_boxes()])}]"),
+            #ColumnDefinition("Prio"    , lambda b: round(b.get_estimated_duration_stock_emptying(), 1), alignment=TextAlignment.RIGHT),
+            #ColumnDefinition("Storage #it #boxes #/boxes", lambda b: f"{str(b.get_nb_stored_items()).rjust(3)} {str(b.get_nb_stored_boxes()).rjust(2)} {','.join(['[' + ','.join([str(vv) for vv in v]) + ']' for v in b.get_nb_items_in_stored_boxes()])}"),
+            #ColumnDefinition("Unstored", lambda b: f"{str(b.get_nb_unstored_box_items()).rjust(3)} {str(b.get_nb_unstored_boxes()).rjust(2)} [{','.join([str(v) for v in b.get_nb_items_in_unstored_boxes()])}]"),
         ]
 
         productListUrgentBase = list(filter(lambda p: p.get_nb_box_to_buy() >= p.get_max_storable_boxes() / 2, productList))
